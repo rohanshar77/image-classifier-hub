@@ -28,9 +28,8 @@ def split_data(images, labels, train_ratio=0.8):
 
 
 def create_pytorch_dataloader(images, labels, batch_size=32):
-    """Create a DataLoader for PyTorch."""
-    tensor_x = torch.Tensor(images) # transform to torch tensor
-    tensor_y = torch.Tensor(labels).long().squeeze()
+    tensor_x = torch.Tensor(images)  # transform to torch tensor
+    tensor_y = torch.tensor(labels, dtype=torch.long).squeeze()
     dataset = TensorDataset(tensor_x, tensor_y)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return dataloader

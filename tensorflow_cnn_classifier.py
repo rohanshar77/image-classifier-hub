@@ -25,7 +25,7 @@ def compile_and_train_model(model, train_images, train_labels, test_images, test
 
     print(train_labels.shape, train_labels.dtype)
     print(test_labels.shape, test_labels.dtype)
-    model.fit(train_images, train_labels, epochs=10,
+    model.fit(train_images, train_labels, epochs=1,
               validation_data=(test_images, test_labels))
 
 

@@ -1,7 +1,10 @@
 import unittest
 import numpy as np
-from cifar10_preprocessor import load_cifar10, preprocess_data, split_data
+import torch
+from cifar10_preprocessor import load_cifar10, preprocess_data, split_data, create_pytorch_dataloader
 from tensorflow_cnn_classifier import build_cnn_model
+from pytorch_cnn_classifier import CNN, load_dataset, train_model
+from sklearn_baseline_classifier import train_and_evaluate_model, flatten_images
 
 
 class TestCifar10Preprocessor(unittest.TestCase):
@@ -48,6 +51,69 @@ class TestTensorflowCNNClassifier(unittest.TestCase):
             print(f"Training failed due to: {e}")
             training_started = False
         self.assertTrue(training_started)
+
+
+class TestPytorchCNNClassifier(unittest.TestCase):
+    def test_model_construction(self):
+        """Confirms that the PyTorch CNN model is instantiated without errors"""
+        try:
+            model = CNN()
+            constructed = True
+        except Exception as e:
+            print(f"Model construction failed due to: {e}")
+            constructed = False
+        self.assertTrue(constructed)
+
+    def test_model_forward_pass(self):
+        """Verifies that the model's forward pass operates correctly"""
+        model = CNN()
+        try:
+            # Create a dummy input tensor
+            dummy_input = torch.randn(1, 3, 32, 32)
+            output = model(dummy_input)
+            forward_pass_successful = True
+        except Exception as e:
+            print(f"Forward pass failed due to: {e}")
+            forward_pass_successful = False
+        self.assertTrue(forward_pass_successful)
+
+    def test_training_initialization(self):
+        """Checks if the PyTorch model starts training without issues"""
+        model = CNN()
+        train_loader, valid_loader, _ = load_dataset(batch_size=32)
+        try:
+            train_model(model, train_loader, valid_loader, learning_rate=0.001, num_epochs=1)
+            training_started = True
+        except Exception as e:
+            print(f"Training failed due to: {e}")
+            training_started = False
+        self.assertTrue(training_started)
+
+
+class TestSklearnBaselineClassifier(unittest.TestCase):
+    def test_flatten_images(self):
+        """Ensures that the flatten_images function correctly reshapes the image data"""
+        (train_images, _), _ = load_cifar10()
+        processed_images = preprocess_data(train_images)
+        flattened_images = flatten_images(processed_images)
+        self.assertEqual(flattened_images.shape[1], 32*32*3)
+
+    def test_model_training_and_evaluation(self):
+        """Checks if the Scikit-Learn model trains and evaluates without errors"""
+        (train_images, train_labels), (test_images, test_labels) = load_cifar10()
+        train_images = preprocess_data(train_images)
+        test_images = preprocess_data(test_images)
+        train_images_flat = flatten_images(train_images)
+        test_images_flat = flatten_images(test_images)
+        (train_images_flat, train_labels), (test_images_flat, test_labels) = split_data(train_images_flat, train_labels)
+
+        try:
+            model = train_and_evaluate_model(train_images_flat, train_labels, test_images_flat, test_labels)
+            training_and_evaluation_successful = True
+        except Exception as e:
+            print(f"Training and evaluation failed due to: {e}")
+            training_and_evaluation_successful = False
+        self.assertTrue(training_and_evaluation_successful)
 
 
 if __name__ == '__main__':
