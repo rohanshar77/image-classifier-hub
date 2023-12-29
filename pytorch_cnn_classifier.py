@@ -4,6 +4,8 @@ import torch.optim as optim
 from torchvision import transforms
 from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader, random_split
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+import json
 
 
 # CNN architecture
@@ -85,6 +87,31 @@ def train_model(model, train_loader, valid_loader, learning_rate=0.001, num_epoc
 
         # Save the model
         torch.save(model.state_dict(), 'models/pytorch_model.pth')
+
+        # Evaluate on test set
+        model.eval()
+        all_predictions = []
+        all_labels = []
+        with torch.no_grad():
+            for images, labels in test_loader:
+                outputs = model(images)
+                _, predicted = torch.max(outputs, 1)
+                all_predictions.extend(predicted.numpy())
+                all_labels.extend(labels.numpy())
+
+        # Calculate metrics
+        accuracy = accuracy_score(all_labels, all_predictions)
+        precision = precision_score(all_labels, all_predictions, average='macro')
+        recall = recall_score(all_labels, all_predictions, average='macro')
+
+        # Save metrics
+        metrics = {'accuracy': accuracy, 'precision': precision, 'recall': recall}
+        save_metrics(metrics, 'metrics/pytorch_metrics.json')
+
+
+def save_metrics(metrics, filename):
+    with open(filename, 'w') as f:
+        json.dump(metrics, f)
 
 
 # Main execution

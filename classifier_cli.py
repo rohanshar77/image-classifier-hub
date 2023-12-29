@@ -118,6 +118,12 @@ def get_image_path():
             print("Invalid path or file does not exist. Please try again.")
 
 
+def get_class_name(class_index):
+    """Map the numerical class index to the actual class name."""
+    class_names = ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"]
+    return class_names[class_index]
+
+
 def main():
     print("Welcome to the Cross-Framework Image Classifier Hub!")
 
@@ -127,15 +133,18 @@ def main():
 
     if '1' in model_choices:
         result = classify_image('tensorflow', image)
-        print("TensorFlow Classification Result: ", result)
+        class_name = get_class_name(result)
+        print("TensorFlow Classification Result: ", class_name)
 
     if '2' in model_choices:
         result = classify_image('pytorch', image)
-        print("PyTorch Classification Result: ", result)
+        class_name = get_class_name(result)
+        print("PyTorch Classification Result: ", class_name)
 
     if '3' in model_choices:
         result = classify_image('sklearn', image)
-        print("Scikit-Learn Classification Result: ", result)
+        class_name = get_class_name(result)
+        print("Scikit-Learn Classification Result: ", class_name)
 
 
 if __name__ == "__main__":

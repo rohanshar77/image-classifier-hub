@@ -1,4 +1,9 @@
 import tensorflow as tf
+import numpy as np
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+from tensorflow.keras.utils import to_categorical
+import json
+
 from cifar10_preprocessor import load_cifar10, preprocess_data, split_data
 
 
@@ -30,6 +35,25 @@ def compile_and_train_model(model, train_images, train_labels, test_images, test
 
     # Save the model
     model.save('models/tensorflow_model.h5')
+
+    # Convert labels to categorical for evaluation
+    test_labels_cat = to_categorical(test_labels, num_classes=10)
+    predictions = model.predict(test_images)
+    predictions_cat = np.argmax(predictions, axis=1)
+
+    # Calculate metrics
+    accuracy = accuracy_score(test_labels, predictions_cat)
+    precision = precision_score(test_labels, predictions_cat, average='macro')
+    recall = recall_score(test_labels, predictions_cat, average='macro')
+
+    # Save metrics
+    metrics = {'accuracy': accuracy, 'precision': precision, 'recall': recall}
+    save_metrics(metrics, 'metrics/tensorflow_metrics.json')
+
+
+def save_metrics(metrics, filename):
+    with open(filename, 'w') as f:
+        json.dump(metrics, f)
 
 
 def main():

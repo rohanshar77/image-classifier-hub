@@ -1,9 +1,11 @@
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
 from sklearn.decomposition import PCA
 from sklearn.pipeline import make_pipeline
-from cifar10_preprocessor import load_cifar10, preprocess_data, split_data
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 import joblib
+import json
+
+from cifar10_preprocessor import load_cifar10, preprocess_data, split_data
 
 
 def flatten_images(images):
@@ -14,6 +16,9 @@ def flatten_images(images):
 def train_and_evaluate_model(train_images, train_labels, test_images, test_labels):
     """Train an SVM model and evaluate its performance."""
     print("Training the Scikit-Learn model...")
+
+    # Flatten the images for the Scikit-Learn model
+    test_images_flat = flatten_images(test_images)
 
     # Reducing dimensionality for SVM using PCA, as it struggles with high-dimensional data
     pca = PCA(n_components=150, whiten=True, random_state=42)
@@ -33,7 +38,20 @@ def train_and_evaluate_model(train_images, train_labels, test_images, test_label
     # Save the model
     joblib.dump(model, 'models/sklearn_model.pkl')
 
-    return model
+    # Calculate metrics
+    predictions = model.predict(test_images_flat)
+    accuracy = accuracy_score(test_labels, predictions)
+    precision = precision_score(test_labels, predictions, average='macro')
+    recall = recall_score(test_labels, predictions, average='macro')
+
+    # Save metrics
+    metrics = {'accuracy': accuracy, 'precision': precision, 'recall': recall}
+    save_metrics(metrics, 'metrics/sklearn_metrics.json')
+
+
+def save_metrics(metrics, filename):
+    with open(filename, 'w') as f:
+        json.dump(metrics, f)
 
 
 def main():
@@ -50,7 +68,7 @@ def main():
     (train_images_flat, train_labels), (test_images_flat, test_labels) = split_data(train_images_flat, train_labels)
 
     # Train and evaluate the model
-    sklearn_model = train_and_evaluate_model(train_images_flat, train_labels, test_images_flat, test_labels)
+    train_and_evaluate_model(train_images_flat, train_labels, test_images_flat, test_labels)
 
 
 if __name__ == "__main__":
