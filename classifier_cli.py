@@ -128,6 +128,16 @@ def main():
     print("Welcome to the Cross-Framework Image Classifier Hub!")
 
     model_choices = get_model_choice()
+
+    while True:
+        try:
+            image_path = get_image_path()
+            image = load_image(image_path)
+            break
+        except ValueError as e:
+            print(e)
+            print("Please enter a valid image file.")
+
     image_path = get_image_path()
     image = load_image(image_path)
 
