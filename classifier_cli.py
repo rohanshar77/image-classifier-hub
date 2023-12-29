@@ -1,10 +1,12 @@
 import argparse
-import numpy as npc
+import numpy as np
 import tensorflow as tf
 import torch
 from torchvision import transforms
 import joblib
 import cv2
+import os
+import sys
 
 from cifar10_preprocessor import preprocess_data
 from pytorch_cnn_classifier import CNN
@@ -86,22 +88,54 @@ def classify_image(model_framework, image):
     return result[0]  # Assuming result contains class index
 
 
+def get_model_choice():
+    """Get the user's choice of models to use for classification."""
+    print("Select the model(s) to use for classification:")
+    print("1: TensorFlow")
+    print("2: PyTorch")
+    print("3: Scikit-Learn")
+    print("Enter your choice(s) separated by space (e.g., '1 2' for TensorFlow and PyTorch):")
+
+    while True:
+        choices = input().strip().split()
+        valid_choices = {'1', '2', '3'}
+        if all(choice in valid_choices for choice in choices):
+            return choices
+        else:
+            print("Invalid choice. Please enter 1, 2, or 3 separated by space.")
+
+
+def get_image_path():
+    """Prompt the user for an image path and validate it."""
+    while True:
+        print("Enter the path to the image file (or type 'exit' to quit):")
+        image_path = input().strip()
+        if image_path.lower() == 'exit':
+            sys.exit("Exiting the program.")
+        elif os.path.isfile(image_path):
+            return image_path
+        else:
+            print("Invalid path or file does not exist. Please try again.")
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Image Classifier CLI')
-    parser.add_argument('image_path', type=str, help='Path to the image file')
-    parser.add_argument('--model', choices=['tensorflow', 'pytorch', 'sklearn'],
-                        default='tensorflow', help='Model framework to use for classification')
+    print("Welcome to the Cross-Framework Image Classifier Hub!")
 
-    args = parser.parse_args()
+    model_choices = get_model_choice()
+    image_path = get_image_path()
+    image = load_image(image_path)
 
-    # Load and preprocess the image
-    image = load_image(args.image_path)
+    if '1' in model_choices:
+        result = classify_image('tensorflow', image)
+        print("TensorFlow Classification Result: ", result)
 
-    # Classify the image
-    result = classify_image(args.model, image)
+    if '2' in model_choices:
+        result = classify_image('pytorch', image)
+        print("PyTorch Classification Result: ", result)
 
-    # Display the classification result
-    print(f"Classification Result: {result}")
+    if '3' in model_choices:
+        result = classify_image('sklearn', image)
+        print("Scikit-Learn Classification Result: ", result)
 
 
 if __name__ == "__main__":
