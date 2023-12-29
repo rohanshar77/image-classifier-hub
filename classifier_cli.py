@@ -1,6 +1,5 @@
 import argparse
-import numpy as np
-import cv2
+import numpy as npc
 import tensorflow as tf
 import torch
 from torchvision import transforms
@@ -24,11 +23,12 @@ def load_image(image_path):
     if image.shape[:2] != (32, 32):
         image = cv2.resize(image, (32, 32))
 
-    # Preprocess the image (normalize pixel values)
-    image = preprocess_data(image)
+    # Ensure the image has 3 channels (RGB)
+    if len(image.shape) != 3 or image.shape[2] != 3:
+        raise ValueError(f"Image at {image_path} does not have 3 channels")
 
-    # Expand dimensions to match the model's input shape (batch size, height, width, channels)
-    image = np.expand_dims(image, axis=0)
+    # Preprocess the image (normalize pixel values)
+    image = preprocess_data(np.array([image]))  # preprocess_data expects a batch of images
 
     return image
 
@@ -55,18 +55,21 @@ def classify_image(model_framework, image):
     """Classify the image using the specified model framework."""
     if model_framework == 'tensorflow':
         model = load_tensorflow_model()
-        # TensorFlow expects the image in a certain format. The preprocessing should already handle this.
         predictions = model.predict(image)
         result = np.argmax(predictions, axis=1)
 
     elif model_framework == 'pytorch':
         model = load_pytorch_model()
+        # Convert the normalized float32 image back to uint8
+        image = (image.squeeze(0) * 255).astype(np.uint8)
         # Convert the image to a PyTorch tensor and normalize
         transform = transforms.Compose([
+            transforms.ToPILImage(),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-        image = transform(image).unsqueeze(0)  # Add batch dimension
+        image = transform(image)  # Apply transform
+        image = image.unsqueeze(0)  # Add batch dimension back after transform
         with torch.no_grad():
             outputs = model(image)
             _, predicted = torch.max(outputs, 1)
@@ -74,14 +77,12 @@ def classify_image(model_framework, image):
 
     elif model_framework == 'sklearn':
         model = load_sklearn_model()
-        # Flatten the image for Scikit-Learn and predict
         image_flat = image.reshape(1, -1)
         result = model.predict(image_flat)
 
     else:
         raise ValueError("Invalid model framework specified.")
 
-    # Return the classification result
     return result[0]  # Assuming result contains class index
 
 
