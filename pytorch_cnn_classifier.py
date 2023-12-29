@@ -1,5 +1,3 @@
-# pytorch_cnn_classifier.py
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -84,6 +82,9 @@ def train_model(model, train_loader, valid_loader, learning_rate=0.001, num_epoc
                 correct += (predicted == labels).sum().item()
 
         print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {loss.item()}, Validation Accuracy: {100 * correct / total}%')
+
+        # Save the model
+        torch.save(model.state_dict(), 'models/pytorch_model.pth')
 
 
 # Main execution

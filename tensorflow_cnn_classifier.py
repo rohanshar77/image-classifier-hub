@@ -25,21 +25,29 @@ def compile_and_train_model(model, train_images, train_labels, test_images, test
 
     print(train_labels.shape, train_labels.dtype)
     print(test_labels.shape, test_labels.dtype)
-    model.fit(train_images, train_labels, epochs=1,
+    model.fit(train_images, train_labels, epochs=10,
               validation_data=(test_images, test_labels))
 
+    # Save the model
+    model.save('models/tensorflow_model.h5')
 
-# Load and preprocess the CIFAR-10 dataset
-(train_images, train_labels), (test_images, test_labels) = load_cifar10()
-train_images = preprocess_data(train_images)
-test_images = preprocess_data(test_images)
 
-# Split the dataset
-(train_images, train_labels), (test_images, test_labels) = split_data(train_images, train_labels)
+def main():
+    # Load and preprocess the CIFAR-10 dataset
+    (train_images, train_labels), (test_images, test_labels) = load_cifar10()
+    train_images = preprocess_data(train_images)
+    test_images = preprocess_data(test_images)
 
-# Build the model
-input_shape = train_images.shape[1:]  # Shape of CIFAR-10 images
-cnn_model = build_cnn_model(input_shape)
+    # Split the dataset
+    (train_images, train_labels), (test_images, test_labels) = split_data(train_images, train_labels)
 
-# Compile and train the model
-compile_and_train_model(cnn_model, train_images, train_labels, test_images, test_labels)
+    # Build the model
+    input_shape = train_images.shape[1:]  # Shape of CIFAR-10 images
+    cnn_model = build_cnn_model(input_shape)
+
+    # Compile and train the model
+    compile_and_train_model(cnn_model, train_images, train_labels, test_images, test_labels)
+
+
+if __name__ == "__main__":
+    main()
