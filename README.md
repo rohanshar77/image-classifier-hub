@@ -139,7 +139,3 @@ Contributions to this project are welcome. Feel free to fork the repository and 
 ## License
 
 This project is open-sourced under the MIT License. See the LICENSE file for more details.
-
-## Acknowledgments
-
-Special thanks to all contributors and maintainers of TensorFlow, PyTorch, and Scikit-Learn for their incredible work in advancing the field of machine learning.
